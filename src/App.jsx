@@ -5,32 +5,38 @@ function App() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [post, setPost] = useState([]);
+  const [image, setImage] = useState("");
 
   function submitHandler(e) {
     e.preventDefault();
+
     if (!title.trim() || !description.trim()) return;
-    const newPost = { title, description };
-    setPost((post) => [...post, newPost]);
+
+    const newPost = {
+      title,
+      description,
+      image,
+    };
+
+    setPost((prev) => [...prev, newPost]);
 
     setTitle("");
     setDescription("");
+    setImage("");
   }
 
-  function delHandler(e) {
-    console.log(e.parentNode);
-    e.parentNode.parentNode.parentNode.remove();
+  function delHandler(index) {
+    setPost((prev) => prev.filter((_, i) => i !== index));
   }
 
-  function editHandler(e) {
-    console.log(e.parentNode);
-    let ch = e.parentNode.parentNode;
-    console.log(ch.children[0].children[0].innerText);
-    let edt = ch.children[0].children[0].innerText;
-    let edd = ch.children[0].children[1].innerText;
-    console.log(edt);
-    setTitle(edt);
-    setDescription(edd);
-    e.parentNode.parentNode.parentNode.remove();
+  function editHandler(index) {
+    const selectedPost = post[index];
+
+    setTitle(selectedPost.title);
+    setDescription(selectedPost.description);
+    setImage(selectedPost.image || "");
+
+    setPost((prev) => prev.filter((_, i) => i !== index));
   }
 
   return (
@@ -50,7 +56,7 @@ function App() {
 
         <form
           onSubmit={submitHandler}
-          className="group relative overflow-hidden flex w-full md:w-[320px] lg:w-[360px] flex-col gap-4 p-6 rounded-sm shadow-xl border border-[#F3B0C3]/60 backdrop-blur-md md:fixed md:top-6 md:left-6 md:z-20 bg-gradient-to-br from-[#FFF5F6]/95 via-[#FFEBF0]/95 to-[#FFD8E4]/95 transition-all duration-500"
+          className="group relative flex w-full md:w-[320px] lg:w-[360px] flex-col gap-4 p-6 rounded-sm shadow-xl border border-[#F3B0C3]/60 backdrop-blur-md md:fixed md:top-6 md:left-6 md:z-20 md:h-[calc(100vh-3rem)] overflow-y-auto overscroll-contain bg-gradient-to-br from-[#FFF5F6]/95 via-[#FFEBF0]/95 to-[#FFD8E4]/95 transition-all duration-500"
         >
           {/* Hover Background Image Layer */}
           <div
@@ -95,6 +101,43 @@ function App() {
               ></textarea>
             </div>
 
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-bold uppercase text-[#8A5A4D]">
+                Upload Image
+              </label>
+
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => {
+                  const file = e.target.files[0];
+
+                  if (file) {
+                    setImage(URL.createObjectURL(file));
+                  }
+                }}
+                className="w-full px-3 py-2 bg-white/80 border border-[#F3B0C3] rounded-sm focus:ring-2 focus:ring-[#FFB6C1] focus:outline-none text-sm"
+              />
+
+              {image && (
+                <div className="relative mt-2">
+                  <img
+                    src={image}
+                    alt="Task preview"
+                    className="w-full h-32 object-cover rounded-sm border border-[#F3B0C3]/70"
+                  />
+
+                  <button
+                    type="button"
+                    onClick={() => setImage("")}
+                    className="mt-2 text-xs font-bold text-[#8A5A4D] hover:text-red-500 cursor-pointer"
+                  >
+                    Remove Image
+                  </button>
+                </div>
+              )}
+            </div>
+
             <button
               type="submit"
               className="relative overflow-hidden flex-1 bg-gradient-to-r from-[#FFB6C1] to-[#FF94A8] text-white font-bold py-1.5 px-3 rounded-sm transition-all text-xs cursor-pointer before:absolute before:inset-0 before:-translate-x-full hover:before:translate-x-full before:bg-white/30 before:transition-transform before:duration-500"
@@ -126,6 +169,14 @@ function App() {
               {/* Card Content (z-10 layer for maximum sharpness) */}
               <div className="relative z-10 flex flex-col justify-between h-full">
                 <div>
+                  {item.image && (
+                    <img
+                      src={item.image}
+                      alt={item.title}
+                      className="w-full h-40 object-cover rounded-sm mb-3 border border-[#F3B0C3]/50"
+                    />
+                  )}
+
                   <h1 className="text-lg font-bold text-[#5B372C] break-words line-clamp-2 leading-snug">
                     {item.title}
                   </h1>
@@ -137,13 +188,13 @@ function App() {
                 <div className="flex items-center gap-2 mt-4 pt-3 border-t border-[#F3B0C3]/50">
                   <button
                     className="relative overflow-hidden flex-1 bg-gradient-to-r from-[#FFB6C1] to-[#FF94A8] text-white font-bold py-1.5 px-3 rounded-sm transition-all text-xs cursor-pointer before:absolute before:inset-0 before:-translate-x-full hover:before:translate-x-full before:bg-white/30 before:transition-transform before:duration-500"
-                    onClick={(e) => editHandler(e.target)}
+                    onClick={(e) => editHandler(index)}
                   >
                     Edit
                   </button>
                   <button
                     className="relative overflow-hidden flex-1 bg-gradient-to-r from-[#FFB6C1] to-[#FF94A8] text-white font-bold py-1.5 px-3 rounded-sm transition-all text-xs cursor-pointer before:absolute before:inset-0 before:-translate-x-full hover:before:translate-x-full before:bg-white/30 before:transition-transform before:duration-500"
-                    onClick={(e) => delHandler(e.target)}
+                    onClick={(e) => delHandler(index)}
                   >
                     Delete
                   </button>
